@@ -1,4 +1,4 @@
-%% NOTE: This is an outdated version. Figure6Stripes.m is the latest version.
+%% Create Figure 6 and Supplementary Figure 14
 
 %% Load climate model data processed by ESMValTool
 % Directory paths to all required files, pre-processed by ESMValTool
@@ -79,10 +79,109 @@ Pchange_all = Pchange_seas(:,1:179,:);
 %% Warming stripes style
 
 load('filenames.mat')
-load('roma.mat')
+load('BrBG22.mat')
 regions = {' ','(c) MAM','(a) JJA',' (b) SON'};
 
-for k = 1:4
+% For main text figure
+for k = 1
+figure;
+set(gcf, 'color', 'w');
+
+% First, CMIP6
+subplot('position',[0.11 0.075 0.35 0.9])
+Z = nan(95,66);
+Z(1:94,1:65) = Pchange_all(1:94,115:179,k);
+[X,Y] = meshgrid(2025:2090,1:95);
+Z2 = Z;
+
+    for i = 1:94 % Go through each CMIP6 model
+        hist_min = min(Pchange_all(i,1:100,k));
+        hist_max = max(Pchange_all(i,1:100,k));
+        % hist_min = min(Pchange_all(i,1:114,k));
+        % hist_max = max(Pchange_all(i,1:114,k));
+
+        for j = 115:179 % Go through each future year
+            if Pchange_all(i,j,k) <= hist_max && Pchange_all(i,j,k) >= hist_min
+                Z2(i,j-114) = nan;
+            end
+        end
+    end
+
+cols1 = pcolor(X,Y,Z);
+% set(cols1,'facealpha',0.5)
+set(cols1, 'EdgeColor', 'none');
+
+hold on
+cols2 = pcolor(X,Y,Z2);
+set(cols2, 'EdgeColor', 'none');
+% axis equal
+% box on
+
+set(gca,'fontsize',18)
+yticks([])
+% yticks(1.5:1:94.5)
+% yticklabels(filenames(1:94))
+colormap(BrBG22)
+caxis([-1.1 1.1])
+plot(X.*isnan(Z2)+0.5,Y.*isnan(Z2)+0.5,'x','color', [0.15 0.15 0.15],'markersize',9)
+f1 = gca;
+f1.XAxis.FontSize = 18;
+f1.YAxis.FontSize = 9;
+title('CMIP6 models')
+
+
+% Next, CMIP5 models
+subplot('position',[0.55 0.075 0.35 0.9])
+Z = nan(85,66);
+Z(1:84,1:65) = Pchange_all(95:end,115:179,k);
+[X,Y] = meshgrid(2025:2090,1:85);
+Z2 = Z;
+
+    for i = 1:84 % Go through each model
+        hist_min = min(Pchange_all(i+94,1:100,k));
+        hist_max = max(Pchange_all(i+94,1:100,k));
+        % hist_min = min(Pchange_all(i+94,1:114,k));
+        % hist_max = max(Pchange_all(i+94,1:114,k));
+
+        for j = 115:179 % Go through each future year
+            if Pchange_all(i+94,j,k) <= hist_max && Pchange_all(i+94,j,k) >= hist_min
+                Z2(i,j-114) = nan;
+            end
+        end
+    end
+
+cols1 = pcolor(X,Y,Z);
+% set(cols1,'facealpha',0.5)
+set(cols1, 'EdgeColor', 'none');
+
+hold on
+cols2 = pcolor(X,Y,Z2);
+set(cols2, 'EdgeColor', 'none');
+% axis equal
+% box on
+set(gca,'fontsize',18)
+
+yticks([])
+% yticks(1.5:1:178.5)
+% yticklabels(filenames(95:end))
+colormap(BrBG22)
+caxis([-1.1 1.1])
+plot(X.*isnan(Z2)+0.5,Y.*isnan(Z2)+0.5,'x','color', [0.15 0.15 0.15],'markersize',9)
+title('CMIP5 models')
+cbar = colorbar('Position',[0.93 0.25 0.02 0.5]);
+ylabel(cbar,'Precipitation anomaly (mm)','fontsize',24)
+cbar.FontSize = 18;
+f1 = gca;
+f1.XAxis.FontSize = 18;
+f1.YAxis.FontSize = 9;
+
+
+
+
+end
+
+% For supplementary figures
+for k = 2:4
 figure;
 set(gcf, 'color', 'w');
 subplot('position',[0.25 0.075 0.6 0.9])
@@ -115,9 +214,9 @@ set(cols2, 'EdgeColor', 'none');
 set(gca,'fontsize',5)
 yticks(1.5:1:178.5)
 yticklabels(filenames)
-colormap(roma)
-caxis([-1 1])
-plot(X.*isnan(Z2)+0.5,Y.*isnan(Z2)+0.5,'x','color', [0.35 0.35 0.35])
+colormap(BrBG22)
+caxis([-1.1 1.1])
+plot(X.*isnan(Z2)+0.5,Y.*isnan(Z2)+0.5,'x','color', [0.15 0.15 0.15])
 
 cbar = colorbar('Position',[0.87 0.25 0.025 0.5]);
 ylabel(cbar,'Precipitation anomaly (mm)','fontsize',16)
@@ -129,8 +228,10 @@ title(regions(k),'fontsize',16)
 end
 
 
+
+
 %% To save:
-% print('Large_DJF_stripes','-dpdf','-fillpage')
+% print('Large_DJF_stripes_revised','-dpdf','-fillpage')
 % print('Large_MAM_stripes','-dpdf','-fillpage')
 % print('Large_JJA_stripes','-dpdf','-fillpage')
 % print('Large_SON_stripes','-dpdf','-fillpage')
